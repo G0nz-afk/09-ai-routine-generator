@@ -1,2 +1,3 @@
-# Daily Standard - AI-powered Routine Generator
-To get started, create a new Codespace from this repo.
+This project is an ai powered daily routine chatbot. It provides some ideas on what activities or meditation would be helpful for the day. 
+
+I used cloudflare to keep the API secure

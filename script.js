@@ -1,11 +1,41 @@
 const routineForm = document.getElementById('routineForm');
 const preferencesStorageKey = 'routinePreferences';
+const themeStorageKey = 'routineTheme';
+const themeToggleButton = document.getElementById('themeToggle');
 
 // Prefer a proxy URL (like a Cloudflare Worker) when available.
 // This keeps secret keys off the client and avoids direct 401 errors from OpenAI.
 const apiUrl = (typeof CLOUDFLARE_WORKER_URL === 'string' && CLOUDFLARE_WORKER_URL.trim() !== '')
   ? CLOUDFLARE_WORKER_URL
   : 'https://api.openai.com/v1/chat/completions';
+
+// Apply a theme and keep toggle text/icon in sync with the current mode
+function applyTheme(theme) {
+  document.body.setAttribute('data-theme', theme);
+
+  if (theme === 'light') {
+    themeToggleButton.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+    themeToggleButton.setAttribute('aria-label', 'Switch to dark mode');
+  } else {
+    themeToggleButton.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+    themeToggleButton.setAttribute('aria-label', 'Switch to light mode');
+  }
+}
+
+// Load the saved theme preference when the page opens
+function loadTheme() {
+  const savedTheme = localStorage.getItem(themeStorageKey);
+  const theme = savedTheme === 'light' ? 'light' : 'dark';
+  applyTheme(theme);
+}
+
+// Toggle between dark and light themes
+themeToggleButton.addEventListener('click', () => {
+  const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  applyTheme(nextTheme);
+  localStorage.setItem(themeStorageKey, nextTheme);
+});
 
 // Save current form values to localStorage
 function savePreferences() {
@@ -59,6 +89,7 @@ function loadPreferences() {
 }
 
 // Restore saved preferences right away and keep saving on every form change
+loadTheme();
 loadPreferences();
 routineForm.addEventListener('change', savePreferences);
 
