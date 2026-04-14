@@ -3,11 +3,8 @@ const preferencesStorageKey = 'routinePreferences';
 const themeStorageKey = 'routineTheme';
 const themeToggleButton = document.getElementById('themeToggle');
 
-// Prefer a proxy URL (like a Cloudflare Worker) when available.
-// This keeps secret keys off the client and avoids direct 401 errors from OpenAI.
-const apiUrl = (typeof CLOUDFLARE_WORKER_URL === 'string' && CLOUDFLARE_WORKER_URL.trim() !== '')
-  ? CLOUDFLARE_WORKER_URL
-  : 'https://api.openai.com/v1/chat/completions';
+// Use Cloudflare Worker only so API keys stay on the server side.
+const apiUrl = typeof CLOUDFLARE_WORKER_URL === 'string' ? CLOUDFLARE_WORKER_URL.trim() : '';
 
 // Apply a theme and keep toggle text/icon in sync with the current mode
 function applyTheme(theme) {
@@ -123,21 +120,13 @@ routineForm.addEventListener('submit', async (e) => {
   button.disabled = true;
   
   try {    
+    if (!apiUrl) {
+      throw new Error('Missing CLOUDFLARE_WORKER_URL in secrets.js.');
+    }
+
     const headers = {
       'Content-Type': 'application/json'
     };
-
-    // Only send Authorization when calling OpenAI directly.
-    // Proxy endpoints usually handle auth on the server side.
-    if (apiUrl === 'https://api.openai.com/v1/chat/completions') {
-      const openAiKey = typeof OPENAI_API_KEY === 'string' ? OPENAI_API_KEY : '';
-
-      if (!openAiKey || openAiKey === 'paste-your-openai-api-key-here') {
-        throw new Error('Missing OpenAI API key. Add a valid key in secrets.js or use a worker URL.');
-      }
-
-      headers.Authorization = `Bearer ${openAiKey}`;
-    }
 
     // Make the API call
     const response = await fetch(apiUrl, {
