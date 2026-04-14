@@ -130,11 +130,13 @@ routineForm.addEventListener('submit', async (e) => {
     // Only send Authorization when calling OpenAI directly.
     // Proxy endpoints usually handle auth on the server side.
     if (apiUrl === 'https://api.openai.com/v1/chat/completions') {
-      if (!OPENAI_API_KEY || OPENAI_API_KEY === 'paste-your-openai-api-key-here') {
+      const openAiKey = typeof OPENAI_API_KEY === 'string' ? OPENAI_API_KEY : '';
+
+      if (!openAiKey || openAiKey === 'paste-your-openai-api-key-here') {
         throw new Error('Missing OpenAI API key. Add a valid key in secrets.js or use a worker URL.');
       }
 
-      headers.Authorization = `Bearer ${OPENAI_API_KEY}`;
+      headers.Authorization = `Bearer ${openAiKey}`;
     }
 
     // Make the API call
